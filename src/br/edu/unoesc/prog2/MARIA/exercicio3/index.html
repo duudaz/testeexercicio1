@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <title>Sistema de Loja Online com Getters</title>
+</head>
+<body>
+  <h1>Abra o console para ver o funcionamento</h1>
+  <script type="application/javascript">
+    // Classe base Produto
+    class Produto {
+      constructor(nome, preco, estoque) {
+        this._nome = nome;
+        this._preco = preco;
+        this._estoque = estoque;
+      }
+
+      vender(qtd) {
+        if (this.estoque >= qtd) {
+          this._estoque -= qtd;
+          console.log(`${qtd} unidade(s) de ${this.nome} vendida(s).`);
+        } else {
+          console.log(`Estoque insuficiente para ${this.nome}.`);
+        }
+      }
+
+      repor(qtd) {
+        this._estoque += qtd;
+        console.log(`${qtd} unidade(s) de ${this.nome} reposta(s).`);
+      }
+
+      get nome() {
+        return this._nome;
+      }
+
+      get preco() {
+        return this._preco;
+      }
+
+      get estoque() {
+        return this._estoque;
+      }
+
+      get detalhes() {
+        return `${this.nome} - R$${this.preco.toFixed(2)}`;
+      }
+    }
+
+    // Subclasse ProdutoFisico
+    class ProdutoFisico extends Produto {
+      vender(qtd) {
+        super.vender(qtd);
+      }
+    }
+
+    // Subclasse ProdutoDigital
+    class ProdutoDigital extends Produto {
+      constructor(nome, preco) {
+        super(nome, preco, Infinity);
+      }
+
+      vender(qtd) {
+        console.log(`${qtd} unidade(s) de ${this.nome} digital vendida(s).`);
+      }
+
+      get estoque() {
+        return 'Disponível sempre';
+      }
+    }
+
+    // Classe Cliente
+    class Cliente {
+      constructor(nome, email) {
+        this._nome = nome;
+        this._email = email;
+        this.pedidos = [];
+      }
+
+      fazerPedido(pedido) {
+        this.pedidos.push(pedido);
+        console.log(`Pedido feito por ${this.nome}.`);
+      }
+
+      get nome() {
+        return this._nome;
+      }
+
+      get email() {
+        return this._email;
+      }
+
+      get resumo() {
+        return `${this.nome} (${this.email}) fez ${this.pedidos.length} pedido(s).`;
+      }
+
+      listarPedidos() {
+        console.log(`Pedidos de ${this.nome}:`);
+        this.pedidos.forEach((pedido, i) => {
+          console.log(`Pedido ${i + 1}:`);
+          pedido.itens.forEach(item => {
+            console.log(`- ${item.produto.nome} x${item.qtd}`);
+          });
+        });
+      }
+    }
+    
+    // Classe Pedido
+    class Pedido {
+      constructor(cliente) {
+        this.cliente = cliente;
+        this.itens = [];
+      }
+
+      adicionarItem(produto, qtd) {
+        this.itens.push({ produto, qtd });
+        console.log(`Item adicionado: ${produto.nome} x${qtd}`);
+      }
+
+      finalizarPedido() {
+        this.itens.forEach(item => {
+          item.produto.vender(item.qtd);
+        });
+        this.cliente.fazerPedido(this);
+        console.log(`Pedido finalizado para ${this.cliente.nome}.`);
+      }
+
+      get total() {
+        return this.itens.reduce((soma, item) => soma + item.produto.preco * item.qtd, 0);
+      }
+    }
+
+    // ======= Testes =======
+
+    const livro = new ProdutoFisico("Livro de JavaScript", 80.00, 10);
+    const fone = new ProdutoFisico("Fone de Ouvido", 150.00, 5);
+    const cursoOnline = new ProdutoDigital("Curso Online de JS", 200.00);
+
+    const cliente1 = new Cliente("Jeverson", "jeverson@email.com");
+
+    const pedido1 = new Pedido(cliente1);
+    pedido1.adicionarItem(livro, 2);
+    pedido1.adicionarItem(cursoOnline, 1);
+
+    pedido1.finalizarPedido();
+
+    console.log(`\Total do pedido: R$${pedido1.total.toFixed(2)}`);
+    console.log(`Estoque do livro: ${livro.estoque}`);
+    console.log(`Estoque do fone: ${fone.estoque}`);
+    console.log(`Estoque do curso online: ${cursoOnline.estoque}`);
+
+    console.log(`\n Histórico de pedidos:`);
+    cliente1.listarPedidos();
+
+    console.log(`\n Resumo do cliente:`);
+    console.log(cliente1.resumo);
+  </script>
+</body>
+</html>
